@@ -62,7 +62,7 @@ graph TB
     J --> K[Gap Analysis<br/>& Learning Plans]
     K --> L[Results JSON<br/>Response]
     L --> M[Frontend<br/>Results Display]
-    B --> N[Static Files<br/>public/]
+    B --> N[Static Files<br/>index.html, styles.css, script.js]
     N --> A
 ```
 
@@ -222,11 +222,10 @@ Qualify/
 │   ├── Agent.js                  # Core assessment logic & AI engine
 │   └── index.js                  # Command-line interface (legacy)
 │
-├── 🌐 Frontend Files
-│   └── public/
-│       ├── index.html            # Main UI layout & structure
-│       ├── styles.css            # Professional styling & animations
-│       └── script.js             # Client-side logic & interactions
+├── 🌐 Frontend Files (Root Level)
+│   ├── index.html                # Main UI layout & structure
+│   ├── styles.css                # Professional styling & animations
+│   └── script.js                 # Client-side logic & interactions
 │
 ├── 🧪 Testing Suite
 │   ├── tests/
@@ -337,16 +336,6 @@ Personalized Learning Plan:
 - Ensure documents have clear, readable text
 - Scanned images in PDFs may not be extracted properly
 - Try converting to a different format (e.g., PDF to DOCX)
-
-## Future Enhancements
-
-- [ ] AI-powered conversational assessment instead of static questions
-- [ ] Integration with online learning platforms (Coursera, Udemy, LinkedIn Learning)
-- [ ] Progress tracking for personalized learning paths
-- [ ] Resume strength scoring
-- [ ] Skill endorsement system
-- [ ] Job market trend analysis
-- [ ] Multi-language support
 
 ---
 

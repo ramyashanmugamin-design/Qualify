@@ -17,7 +17,7 @@ graph TB
     J --> K[Gap Analysis<br/>& Learning Plans]
     K --> L[Results JSON<br/>Response]
     L --> M[Frontend<br/>Results Display]
-    B --> N[Static Files<br/>public/]
+    B --> N[Static Files<br/>index.html, styles.css, script.js]
     N --> A
 ```
 

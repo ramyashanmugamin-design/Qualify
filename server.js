@@ -89,7 +89,7 @@ const upload = multer({
 });
 
 // Middleware
-app.use(express.static('public', {
+app.use(express.static('.', {
     setHeaders: (res, filePath) => {
         res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
         res.setHeader('Pragma', 'no-cache');
@@ -102,7 +102,7 @@ app.use(express.json());
 
 // Serve index.html
 app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+    res.sendFile(path.join(__dirname, 'index.html'));
 });
 
 // Extract text from uploaded files
