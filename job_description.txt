@@ -1,0 +1,14 @@
+Job Title: Full Stack Developer
+
+We are looking for a skilled Full Stack Developer with expertise in JavaScript, Node.js, React, and SQL. The ideal candidate should have experience in building web applications, managing databases, and working with modern frameworks.
+
+Requirements:
+- Proficiency in JavaScript
+- Experience with Node.js and Express
+- Knowledge of React for front-end development
+- SQL database management
+- HTML and CSS basics
+
+Nice to have:
+- Python for scripting
+- Machine Learning basics

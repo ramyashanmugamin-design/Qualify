@@ -1,0 +1,32 @@
+John Doe
+Software Developer
+
+Professional Experience:
+
+Senior Developer | TechCorp Inc. | 2022 - Present
+- Developed and maintained web applications using JavaScript, React, and Node.js
+- Built RESTful APIs that improved system performance by 40%
+- Led a team of 3 developers in implementing agile methodologies
+- Optimized database queries in SQL, reducing response time by 60%
+
+Junior Developer | XYZ Corp | 2020 - 2022
+- Built web applications using HTML, CSS, and JavaScript
+- Worked on a React project that increased user engagement by 25%
+- Implemented basic SQL queries for data management
+- Participated in agile development processes
+
+Skills:
+- JavaScript (ES6+)
+- React.js
+- Node.js
+- HTML5 & CSS3
+- SQL
+- Git
+- Agile/Scrum
+
+Education:
+- Bachelor's in Computer Science | University of Tech | 2016 - 2020
+
+Certifications:
+- AWS Certified Developer | 2023
+- Scrum Master Certification | 2021

@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title> Qualify - Professional Skill Assessment</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-content">
+                <h1 class="logo">
+                    <span class="logo-icon">🎯</span>
+                    Qualify
+                </h1>
+                <p class="tagline">Professional Skill Assessment & Learning Planner</p>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="upload-container">
+                <h2>Upload Your Documents</h2>
+                <p class="description">Upload a job description and your resume to get started with skill assessment</p>
+
+                <!-- Upload Form -->
+                <form id="uploadForm" class="upload-form" enctype="multipart/form-data">
+                    <div class="form-row">
+                        <!-- Job Description Upload -->
+                        <div class="upload-box">
+                            <div class="upload-icon">📋</div>
+                            <h3>Job Description <span class="required-asterisk">*</span></h3>
+                            <p class="file-info">Upload the job description document</p>
+                            <div class="file-input-wrapper">
+                                <input 
+                                    type="file" 
+                                    id="jobDescription" 
+                                    name="jobDescription"
+                                    class="file-input"
+                                    accept=".pdf,.doc,.docx,.rtf,.txt"
+                                    required
+                                >
+                                <label for="jobDescription" class="file-label">
+                                    <span class="label-text">Choose File</span>
+                                </label>
+                            </div>
+                            <p class="supported-format-note">Supported formats: PDF, DOC, DOCX, RTF, TXT <br> Maximum file size: 2 MB</p>
+                            <div id="jobDescriptionName" class="file-name"></div>
+                            <div id="jobDescriptionError" class="error-message"></div>
+                        </div>
+
+                        <!-- Resume Upload -->
+                        <div class="upload-box">
+                            <div class="upload-icon">👤</div>
+                            <h3>Resume <span class="required-asterisk">*</span></h3>
+                            <p class="file-info">Upload your resume document</p>
+                            <div class="file-input-wrapper">
+                                <input 
+                                    type="file" 
+                                    id="resume" 
+                                    name="resume"
+                                    class="file-input"
+                                    accept=".pdf,.doc,.docx,.rtf,.txt"
+                                    required
+                                >
+                                <label for="resume" class="file-label">
+                                    <span class="label-text">Choose File</span>
+                                </label>
+                            </div>
+                            <p class="supported-format-note">Supported formats: PDF, DOC, DOCX, RTF, TXT <br> Maximum file size: 2 MB</p>
+                            <div id="resumeName" class="file-name"></div>
+                            <div id="resumeError" class="error-message"></div>
+                        </div>
+                    </div>
+
+
+                    <!-- Submit Button -->
+                    <button type="submit" class="submit-btn" id="submitBtn" disabled>
+                        <span class="btn-text">Analyze Skills</span>
+                        <span class="btn-icon">→</span>
+                    </button>
+
+                    <!-- Loading Spinner -->
+                    <div id="loadingSpinner" class="loading-spinner hidden">
+                        <div class="spinner"></div>
+                        <p>Processing your documents...</p>
+                    </div>
+                </form>
+
+                <!-- General Error Message -->
+                <div id="generalError" class="general-error hidden"></div>
+            </div>
+        </main>
+
+        <!-- Results Section (Hidden initially) -->
+        <section id="resultsSection" class="results-section hidden">
+            <div class="results-container">
+                <h2>Skill Assessment Results</h2>
+                
+                <div class="results-content">
+                    <!-- Required Skills -->
+                    <div class="result-box">
+                        <h3>📌 Required Skills</h3>
+                        <div id="requiredSkillsList" class="skills-list"></div>
+                    </div>
+
+                    <!-- Candidate Skills -->
+                    <div class="result-box">
+                        <h3>✓ Your Current Skills</h3>
+                        <div id="candidateSkillsList" class="skills-list"></div>
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="action-buttons">
+                    <button onclick="proceedToAssessment()" class="btn-primary">
+                        Proceed to Assessment
+                    </button>
+                    <button onclick="resetForm()" class="btn-secondary">
+                        Upload Different Files
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Assessment Section (Hidden initially) -->
+        <section id="assessmentSection" class="results-section hidden">
+            <div class="results-container">
+                <h2>Interactive Self-Assessment</h2>
+
+                <div id="assessmentForm" class="result-box">
+                    <h3>📊 Rate Your Proficiency</h3>
+                    <p>For each required skill, select your current proficiency level on a 1-5 scale. Review whether the skill appears in your resume to help identify potential gaps.</p>
+                    <!-- Assessment grid will be populated by JavaScript -->
+                </div>
+
+                <div id="assessmentResultsSection" class="hidden">
+                    <div class="result-box">
+                        <h3>⚠️ Skill Gaps Identified</h3>
+                        <div id="gapList" class="skills-list"></div>
+                    </div>
+
+                    <div class="result-box">
+                        <h3>📚 Personalized Learning Plan</h3>
+                        <div id="learningPlanList" class="skills-list"></div>
+                    </div>
+                </div>
+
+                <div class="action-buttons" id="assessmentActionButtons">
+                    <button onclick="submitSelfAssessment()" class="btn-primary" id="submitAssessmentBtn">Submit Self Assessment</button>
+                    <button onclick="backToResults()" class="btn-secondary" id="backToResultsBtn">Back to Results</button>
+                    <button onclick="resetForm()" class="btn-secondary" id="uploadDifferentFilesBtn">Upload Different Files</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <p>&copy; 2026 Qualify. Professional Skill Assessment Platform.</p>
+        </footer>
+    </div>
+
+    <script src="script.js?v=2"></script>
+</body>
+</html>
