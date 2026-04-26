@@ -235,6 +235,16 @@ app.use((err, req, res, next) => {
     next();
 });
 
+// Return JSON for unknown API routes
+app.use('/api', (req, res) => {
+    res.status(404).json({ error: 'API endpoint not found' });
+});
+
+// SPA fallback for frontend routes
+app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, 'index.html'));
+});
+
 // Start server
 app.listen(PORT, () => {
     console.log(`Qualify Agent running on http://localhost:${PORT}`);

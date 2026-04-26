@@ -105,10 +105,18 @@ document.getElementById('uploadForm').addEventListener('submit', async function(
             body: formData
         });
         
-        const data = await response.json();
+        const text = await response.text();
+        let data;
+
+        try {
+            data = text ? JSON.parse(text) : null;
+        } catch (parseError) {
+            throw new Error(`Invalid JSON response from server: ${text}`);
+        }
         
         if (!response.ok) {
-            throw new Error(data.error || 'Upload failed');
+            const message = data?.error || text || 'Upload failed';
+            throw new Error(message);
         }
         
         // Store data and show results
