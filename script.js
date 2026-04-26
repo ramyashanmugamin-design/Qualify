@@ -127,6 +127,9 @@ document.getElementById('uploadForm').addEventListener('submit', async function(
         console.error('Error:', error);
         generalError.textContent = 'Error: ' + error.message;
         generalError.classList.remove('hidden');
+        // Hide results section on error to prevent showing stale data
+        document.getElementById('resultsSection').classList.add('hidden');
+        document.querySelector('.upload-container').style.display = 'block';
     } finally {
         submitBtn.disabled = false;
         loadingSpinner.classList.add('hidden');

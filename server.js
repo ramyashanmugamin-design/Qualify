@@ -105,72 +105,6 @@ app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'index.html'));
 });
 
-// Extract text from uploaded files
-async function extractTextFromFile(filePath, mimeType) {
-    try {
-        if (mimeType === 'application/pdf' || filePath.endsWith('.pdf')) {
-            const dataBuffer = fs.readFileSync(filePath);
-            
-            // Temporarily suppress all console output during PDF parsing
-            const originalConsole = { ...console };
-            console.warn = () => {};
-            console.error = () => {};
-            console.log = () => {};
-            
-            try {
-                const data = await pdfParse(dataBuffer, { 
-                    // Remove version specification to use default
-                    pagerender: function(pageData) {
-                        return pageData.getTextContent({
-                            normalizeWhitespace: false,
-                            disableCombineTextItems: false
-                        }).then(function(textContent) {
-                            let lastY, text = '';
-                            for (let item of textContent.items) {
-                                if (lastY == item.transform[5] || !lastY){
-                                    text += item.str;
-                                }  
-                                else{
-                                    text += '\n' + item.str;
-                                }    
-                                lastY = item.transform[5];
-                            }
-                            return text;
-                        });
-                    },
-                    // Add options to suppress warnings
-                    verbosity: 0,
-                    disableFontFace: true,
-                    disableCreateObjectURL: true,
-                    disableWebFonts: true
-                });
-                return data.text;
-            } finally {
-                // Restore console functions
-                Object.assign(console, originalConsole);
-            }
-        } else if (mimeType === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' || filePath.endsWith('.docx')) {
-        } else if (mimeType === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' || filePath.endsWith('.docx')) {
-            const result = await mammoth.extractRawText({ path: filePath });
-            return result.value;
-        } else if (mimeType === 'application/msword' || filePath.endsWith('.doc')) {
-            // For .doc files, use mammoth if available
-            try {
-                const result = await mammoth.extractRawText({ path: filePath });
-                return result.value;
-            } catch (e) {
-                return fs.readFileSync(filePath, 'utf8');
-            }
-        } else if (mimeType === 'application/rtf' || mimeType === 'text/rtf' || filePath.endsWith('.rtf')) {
-            return fs.readFileSync(filePath, 'utf8');
-        }
-        return fs.readFileSync(filePath, 'utf8');
-    } catch (error) {
-        console.error('Error extracting text:', error);
-        throw new Error('Failed to extract text from file: ' + error.message);
-    }
-}
-
 // Upload and process files
 app.post('/api/upload', upload.fields([
     { name: 'jobDescription', maxCount: 1 },
@@ -184,16 +118,16 @@ app.post('/api/upload', upload.fields([
         const jobFile = req.files.jobDescription[0];
         const resumeFile = req.files.resume[0];
 
-        // Extract text from files
-        const jobDescription = await extractTextFromFile(jobFile.path, jobFile.mimetype);
-        const resumeText = await extractTextFromFile(resumeFile.path, resumeFile.mimetype);
+        // Initialize agent and extract text from files
+        const agent = new Agent();
+        const jobDescription = await agent.extractTextFromFile(jobFile.path, jobFile.mimetype);
+        const resumeText = await agent.extractTextFromFile(resumeFile.path, resumeFile.mimetype);
 
         // Clean up uploaded files
         fs.unlinkSync(jobFile.path);
         fs.unlinkSync(resumeFile.path);
 
-        // Initialize agent and process
-        const agent = new Agent();
+        // Process with agent
         agent.loadJobDescription(jobDescription);
         agent.loadResume(resumeText);
 

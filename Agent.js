@@ -1,5 +1,49 @@
 const fs = require('fs');
 const readline = require('readline');
+const mammoth = require('mammoth');
+const pdfParse = require('pdf-parse');
+
+// Suppress PDF.js warnings globally
+const originalConsoleWarn = console.warn;
+const originalConsoleError = console.error;
+const originalConsoleLog = console.log;
+
+const suppressedMessages = [
+    'TT: undefined function: 21',
+    'TT: undefined function',
+    'Warning: TT: undefined function'
+];
+
+function shouldSuppress(message) {
+    if (typeof message !== 'string') return false;
+    return suppressedMessages.some(suppressed => message.includes(suppressed));
+}
+
+console.warn = function(...args) {
+    if (!shouldSuppress(args[0])) {
+        originalConsoleWarn.apply(console, args);
+    }
+};
+
+console.error = function(...args) {
+    if (!shouldSuppress(args[0])) {
+        originalConsoleError.apply(console, args);
+    }
+};
+
+console.log = function(...args) {
+    if (!shouldSuppress(args[0])) {
+        originalConsoleLog.apply(console, args);
+    }
+};
+
+// Also suppress at the process level for any uncaught warnings
+const originalEmitWarning = process.emitWarning;
+process.emitWarning = function(warning, ...args) {
+    if (!shouldSuppress(warning)) {
+        originalEmitWarning.call(process, warning, ...args);
+    }
+};
 
 class Agent {
     constructor() {
@@ -8,6 +52,7 @@ class Agent {
         this.requiredSkills = [];
         this.candidateSkills = {};
         this.skillLevels = {};
+        this.alignmentScore = 0;
         this.resourceDatabase = {
             'javascript': {
                 focus: 'Core JavaScript and modern tooling for web development',
@@ -169,13 +214,102 @@ class Agent {
         ];
     }
 
+    resetState() {
+        this.jobDescription = '';
+        this.resume = '';
+        this.requiredSkills = [];
+        this.candidateSkills = {};
+        this.skillLevels = {};
+        this.alignmentScore = 0;
+    }
+
+    // Extract text from file based on mime type
+    async extractTextFromFile(filePath, mimeType) {
+        try {
+            if (mimeType === 'application/pdf' || filePath.endsWith('.pdf')) {
+                const dataBuffer = fs.readFileSync(filePath);
+                
+                // Temporarily suppress all console output during PDF parsing
+                const originalConsole = { ...console };
+                console.warn = () => {};
+                console.error = () => {};
+                console.log = () => {};
+                
+                try {
+                    const data = await pdfParse(dataBuffer, { 
+                        // Remove version specification to use default
+                        pagerender: function(pageData) {
+                            return pageData.getTextContent({
+                                normalizeWhitespace: false,
+                                disableCombineTextItems: false
+                            }).then(function(textContent) {
+                                let lastY, text = '';
+                                for (let item of textContent.items) {
+                                    if (lastY == item.transform[5] || !lastY){
+                                        text += item.str;
+                                    }  
+                                    else{
+                                        text += '\n' + item.str;
+                                    }    
+                                    lastY = item.transform[5];
+                                }
+                                return text;
+                            });
+                        },
+                        // Add options to suppress warnings
+                        verbosity: 0,
+                        disableFontFace: true,
+                        disableCreateObjectURL: true,
+                        disableWebFonts: true
+                    });
+                    return data.text;
+                } finally {
+                    // Restore console functions
+                    Object.assign(console, originalConsole);
+                }
+            } else if (mimeType === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' || filePath.endsWith('.docx')) {
+                const result = await mammoth.extractRawText({ path: filePath });
+                return result.value;
+            } else if (mimeType === 'application/msword' || filePath.endsWith('.doc')) {
+                // For .doc files, use mammoth if available
+                try {
+                    const result = await mammoth.extractRawText({ path: filePath });
+                    return result.value;
+                } catch (e) {
+                    return fs.readFileSync(filePath, 'utf8');
+                }
+            } else if (mimeType === 'application/rtf' || mimeType === 'text/rtf' || filePath.endsWith('.rtf')) {
+                return fs.readFileSync(filePath, 'utf8');
+            }
+            return fs.readFileSync(filePath, 'utf8');
+        } catch (error) {
+            console.error('Error extracting text:', error);
+            throw new Error('Failed to extract text from file: ' + error.message);
+        }
+    }
+
+    // Get mime type from file extension
+    getMimeTypeFromPath(filePath) {
+        const ext = filePath.split('.').pop().toLowerCase();
+        const mimeTypes = {
+            'pdf': 'application/pdf',
+            'doc': 'application/msword',
+            'docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+            'rtf': 'application/rtf',
+            'txt': 'text/plain'
+        };
+        return mimeTypes[ext] || 'text/plain';
+    }
+
     loadJobDescription(text) {
         this.jobDescription = text;
+        this.requiredSkills = [];
         this.extractRequiredSkills();
     }
 
     loadResume(text) {
         this.resume = text;
+        this.candidateSkills = {};
         this.extractCandidateSkills();
     }
 
@@ -707,10 +841,24 @@ class Agent {
 
     askProficiency(skill, rl) {
         return new Promise((resolve) => {
-            rl.question(`On a scale of 1-5, how proficient are you in ${skill}? (1=Beginner, 5=Expert) `, (answer) => {
-                const level = parseInt(answer) || 1;
-                resolve(Math.min(5, Math.max(1, level)));
-            });
+            const ask = () => {
+                rl.question(`On a scale of 1-5, how proficient are you in ${skill}? (1=Beginner, 5=Expert) `, (answer) => {
+                    const trimmed = answer.trim();
+                    if (trimmed === '') {
+                        console.log('Please enter a proficiency level (1-5).');
+                        ask();
+                        return;
+                    }
+                    const level = parseInt(trimmed);
+                    if (isNaN(level) || level < 1 || level > 5) {
+                        console.log('Please enter a valid number between 1 and 5.');
+                        ask();
+                        return;
+                    }
+                    resolve(level);
+                });
+            };
+            ask();
         });
     }
 
@@ -801,8 +949,17 @@ class Agent {
     }
 
     async run(jobDescFile, resumeFile) {
-        this.loadJobDescription(fs.readFileSync(jobDescFile, 'utf8'));
-        this.loadResume(fs.readFileSync(resumeFile, 'utf8'));
+        this.resetState();
+        
+        // Extract text from files using the same logic as the web interface
+        const jobDescMimeType = this.getMimeTypeFromPath(jobDescFile);
+        const resumeMimeType = this.getMimeTypeFromPath(resumeFile);
+        
+        const jobDescription = await this.extractTextFromFile(jobDescFile, jobDescMimeType);
+        const resumeText = await this.extractTextFromFile(resumeFile, resumeMimeType);
+        
+        this.loadJobDescription(jobDescription);
+        this.loadResume(resumeText);
 
         console.log('=== REQUIRED SKILLS ANALYSIS ===');
         console.log(`Extracted ${this.requiredSkills.length} skills from job description:`);
@@ -814,16 +971,7 @@ class Agent {
         console.log(`Extracted ${Object.keys(this.candidateSkills).length} skills from resume:`);
         Object.entries(this.candidateSkills).forEach(([skillName, skillData]) => {
             console.log(`- ${skillName} (${skillData.category})`);
-            console.log(`  Recency: ${skillData.recency}, Action-Result Score: ${skillData.actionResultScore}/5`);
-            if (skillData.evidence.length > 0) {
-                console.log(`  Evidence: "${skillData.evidence[0].text}"`);
-            }
         });
-
-        // Calculate and display alignment score
-        const alignment = this.calculateAlignmentScore(this.requiredSkills);
-        console.log('\n=== ALIGNMENT SCORE ===');
-        console.log(`Overall Alignment: ${alignment.score}/${alignment.maxScore} (${alignment.percentage}%)`);
 
         await this.assessSkills();
 
