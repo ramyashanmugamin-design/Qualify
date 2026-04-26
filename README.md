@@ -1,5 +1,10 @@
 # Qualify - Professional Skill Assessment Platform
 
+🚀
+The project is live at: https://qualify-u93e.onrender.com
+
+ **Note:** The application is hosted on a free instance. If the link takes a minute to load, the server is likely "waking up" from sleep mode. Thank you for your patience!
+
 ## Project Title & Overview
 
 Qualify is a modern, web-based platform that enables professionals to assess their real proficiency against job requirements, identify skill gaps, and receive personalized learning recommendations. The application provides an AI-powered conversational assessment system that analyzes job descriptions and resumes to generate tailored learning plans with curated resources and time estimates.

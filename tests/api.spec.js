@@ -29,7 +29,7 @@ test.describe('API Endpoints', () => {
   });
 
   test('should handle 404 for non-existent routes', async ({ request }) => {
-    const response = await request.get('/non-existent-route');
+    const response = await request.get('/api/v1/non-existent-route');
     expect(response.status()).toBe(404);
   });
 });
